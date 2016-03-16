@@ -8,6 +8,7 @@ using Microsoft.AspNet.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Configuration;
 using OdeToFood.Services;
+using Microsoft.AspNet.Routing;
 
 namespace OdeToFood
 {
@@ -28,6 +29,7 @@ namespace OdeToFood
             services.AddMvc();
             services.AddSingleton(provider => Configuration);
             services.AddSingleton<IGreeter, Greeter>();
+            services.AddScoped<IRestaurantData, InMemoryRestaurantData>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -45,7 +47,8 @@ namespace OdeToFood
             app.UseDefaultFiles();
             //app.UseStaticFiles();
             app.UseFileServer();
-            app.UseMvcWithDefaultRoute();
+            app.UseMvc(ConfigureRoutes);
+            //app.UseMvcWithDefaultRoute();
             
             app.Run(async (context) =>
             {
@@ -53,6 +56,11 @@ namespace OdeToFood
                 var greeting = greeter.GetGreeting();
                 await context.Response.WriteAsync(greeting);
             });
+        }
+
+        private void ConfigureRoutes(IRouteBuilder routerBuilder)
+        {
+            routerBuilder.MapRoute("Default", "{controller=Home}/{action=Index}/{id?}");
         }
 
         // Entry point for the application.
